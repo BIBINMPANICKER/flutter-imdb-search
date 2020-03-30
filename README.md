@@ -1,4 +1,4 @@
-# tradexa
+# tradexa, an Imdb search app
 
 A new Flutter application.
 

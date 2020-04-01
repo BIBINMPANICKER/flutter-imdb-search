@@ -1,8 +1,12 @@
+import 'dart:ui';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
 import 'package:tradexa/src/state_provider/movie_provider.dart';
+import 'package:tradexa/src/utils/constants.dart';
 import 'package:tradexa/src/utils/utils.dart';
 
 import 'models/movie_list_response.dart';
@@ -61,7 +65,7 @@ class _HomeState extends State<Home> {
                     onChanged: (value) {},
                     decoration: InputDecoration(
                       contentPadding: EdgeInsets.all(16),
-                      hintText: "Search movie",
+                      hintText: "Search for movies",
                       suffixIcon: model.isLoading
                           ? JumpingText('...',
                               style: TextStyle(
@@ -87,12 +91,12 @@ class _HomeState extends State<Home> {
               ),
               Consumer<MovieProvider>(
                 builder: (context, model, child) {
-                  return model.movieListResponse.title != null
+                  return model.movieListResponse.results != null
                       ? Expanded(
                           child: ListView.builder(
-                              itemCount: 1,
-                              itemBuilder: (context, index) =>
-                                  listItem(index, model.movieListResponse)))
+                              itemCount: model.movieListResponse.results.length,
+                              itemBuilder: (context, index) => listItem(index,
+                                  model.movieListResponse.results[index])))
                       : Expanded(child: Center(child: Text(model.quote)));
                 },
               )
@@ -104,23 +108,36 @@ class _HomeState extends State<Home> {
   }
 
 //  card item in the list view
-  Widget listItem(index, MovieListResponse movieResponse) {
-    return Card(
-        elevation: 8,
-        margin: EdgeInsets.only(top: 12),
-        child: Container(
-          padding: EdgeInsets.only(left: 8),
-          height: screenHeight(context, dividedBy: 4.3),
-          width: screenWidth(context, dividedBy: 3),
+  Widget listItem(index, Result result) {
+    return Stack(
+      children: <Widget>[
+        Card(
+            elevation: 10,
+            shape: RoundedRectangleBorder(),
+            margin: EdgeInsets.only(top: 42, left: 4, right: 2),
+            child: Container(
+              color: Colors.white,
+              height: screenHeight(context, dividedBy: 4.8),
+            )),
+        Positioned(
+          left: 12,
+          right: 0,
+          top: 20,
           child: Row(
             children: <Widget>[
               ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(6)),
-                child: Image.network(
-                  movieResponse.poster,
-                  fit: BoxFit.fill,
-                  height: screenHeight(context, dividedBy: 4.7),
+                child: CachedNetworkImage(
+                  height: screenHeight(context, dividedBy: 4.5),
                   width: screenWidth(context, dividedBy: 3),
+                  fit: BoxFit.fill,
+                  imageUrl: '${Constants.imgBaseUrl}${result.posterPath}',
+                  errorWidget: (context, url, error) => Image.asset(
+                    'assets/images/no_image.jpg',
+                    height: screenHeight(context, dividedBy: 4.5),
+                    width: screenWidth(context, dividedBy: 3),
+                    fit: BoxFit.fill,
+                  ),
                 ),
               ),
               SizedBox(
@@ -131,14 +148,14 @@ class _HomeState extends State<Home> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(movieResponse.title,
+                      Text(result.title,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18)),
                       SizedBox(
                         height: screenHeight(context, dividedBy: 150),
                       ),
                       Text(
-                        movieResponse.genre.replaceAll(',', ' |'),
+                        genre(result.genreIds),
                         style: TextStyle(color: Colors.black45, fontSize: 12),
                       ),
                       SizedBox(
@@ -146,14 +163,14 @@ class _HomeState extends State<Home> {
                       ),
                       Container(
                         decoration: new BoxDecoration(
-                          color: ratingColor(movieResponse.imdbRating),
+                          color: ratingColor(result.voteAverage),
                           borderRadius: new BorderRadius.circular(15.0),
                         ),
                         height: screenHeight(context, dividedBy: 30),
                         width: screenWidth(context, dividedBy: 4.8),
                         child: Center(
                             child: Text(
-                          '${movieResponse.imdbRating} IMDB',
+                          '${result.voteAverage ?? 'N/A'} IMDB',
                           style: TextStyle(color: Colors.white, fontSize: 12),
                         )),
                       )
@@ -161,13 +178,15 @@ class _HomeState extends State<Home> {
               ),
             ],
           ),
-        ));
+        )
+      ],
+    );
   }
 
 // function for changing color of rating widget by value
   Color ratingColor(rating) {
     try {
-      double val = double.parse(rating);
+      double val = rating;
       if (val <= 2) {
         return Colors.redAccent;
       } else if (val <= 5) {
@@ -185,7 +204,7 @@ class _HomeState extends State<Home> {
       Provider.of<MovieProvider>(context, listen: false)
           .getMovies(_movieNameController.text);
       FocusScope.of(context).requestFocus(FocusNode());
-    }else{
+    } else {
       toast(msg: 'Please Enter the Movie title');
     }
   }

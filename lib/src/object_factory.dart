@@ -1,6 +1,5 @@
-
-import 'package:tradexa/src/utils/api_client.dart';
 import 'package:tradexa/src/resources/repository/repository.dart';
+import 'package:tradexa/src/utils/api_client.dart';
 
 class ObjectFactory {
   static final _objectFactory = ObjectFactory._internal();

@@ -4,34 +4,63 @@
 
 import 'dart:convert';
 
+MovieListResponse movieListResponseFromJson(String str) =>
+    MovieListResponse.fromMap(json.decode(str));
+
+String movieListResponseToJson(MovieListResponse data) =>
+    json.encode(data.toMap());
+
 class MovieListResponse {
-  final String title;
-  final String genre;
-  final String poster;
-  final String imdbRating;
+  List<Result> results = <Result>[];
 
   MovieListResponse({
-    this.title,
-    this.genre,
-    this.poster,
-    this.imdbRating,
+    this.results,
   });
 
-  factory MovieListResponse.fromJson(String str) => MovieListResponse.fromMap(json.decode(str));
-
-  String toJson() => json.encode(toMap());
-
-  factory MovieListResponse.fromMap(Map<String, dynamic> json) => MovieListResponse(
-    title: json["Title"] == null ? null : json["Title"],
-    genre: json["Genre"] == null ? null : json["Genre"],
-    poster: json["Poster"] == null ? null : json["Poster"],
-    imdbRating: json["imdbRating"] == null ? null : json["imdbRating"],
-  );
+  factory MovieListResponse.fromMap(Map<String, dynamic> json) =>
+      MovieListResponse(
+        results: json["results"] == null
+            ? null
+            : List<Result>.from(json["results"].map((x) => Result.fromMap(x))),
+      );
 
   Map<String, dynamic> toMap() => {
-    "Title": title == null ? null : title,
-    "Genre": genre == null ? null : genre,
-    "Poster": poster == null ? null : poster,
-    "imdbRating": imdbRating == null ? null : imdbRating,
-  };
+        "results": results == null
+            ? null
+            : List<dynamic>.from(results.map((x) => x.toMap())),
+      };
+}
+
+class Result {
+  String posterPath;
+  List<int> genreIds;
+  String title;
+  double voteAverage;
+
+  Result({
+    this.posterPath,
+    this.genreIds,
+    this.title,
+    this.voteAverage,
+  });
+
+  factory Result.fromMap(Map<String, dynamic> json) => Result(
+        posterPath: json["poster_path"] == null ? null : json["poster_path"],
+        genreIds: json["genre_ids"] == null
+            ? null
+            : List<int>.from(json["genre_ids"].map((x) => x)),
+        title: json["title"] == null ? null : json["title"],
+        voteAverage: json["vote_average"] == null
+            ? null
+            : json["vote_average"].toDouble(),
+      );
+
+  Map<String, dynamic> toMap() => {
+        "poster_path": posterPath == null ? null : posterPath,
+        "genre_ids": genreIds == null
+            ? null
+            : List<dynamic>.from(genreIds.map((x) => x)),
+        "title": title == null ? null : title,
+        "vote_average": voteAverage == null ? null : voteAverage,
+      };
 }

@@ -9,8 +9,7 @@ class ApiClient {
     initClient();
   }
 
-  final String baseUrl =
-      'https://movie-database-imdb-alternative.p.rapidapi.com';
+  final String baseUrl = 'https://api.themoviedb.org/3';
 
   Dio _dio;
 
@@ -61,6 +60,7 @@ class ApiClient {
 
   //get movie
   Future<Response> getMovies(String movieName) {
-    return _dio.get("/?t=$movieName&r=json");
+    return _dio.get("/search/movie?api_key=d5b098de718ad270af9e1c51df9bb6df"
+        "&query=$movieName&page=1");
   }
 }

@@ -19,6 +19,11 @@ class MovieProvider with ChangeNotifier {
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         movieListResponse =
             await ObjectFactory().repository.getMovies(movieName);
+        // if there is no movies with the given query
+        if (movieListResponse.results.length == 0) {
+          movieListResponse.results = null;
+          quote = 'No Movies Found...';
+        }
         isLoading = false;
         notifyListeners(); //updating the list view
       }
